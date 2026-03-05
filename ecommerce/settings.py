@@ -2,19 +2,25 @@
 Django settings for ecommerce project.
 """
 
-from pathlib import Path
 import os
+import dj_database_url  
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-gn&pei8^26e*&t1mt%9o6n90ol!5o&8^fh1yv0*kopj-9)*ldq'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-gn&pei8^26e*&t1mt%9o6n90ol!5o&8^fh1yv0*kopj-9)*ldq')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# This stays True locally, but False on Render
+DEBUG = 'RENDER' not in os.environ 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+render_external_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if render_external_hostname:
+    ALLOWED_HOSTS.append(render_external_hostname)
+
 
 # Application definition
 INSTALLED_APPS = [
@@ -29,6 +35,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Added missing comma here
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -59,12 +66,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
-# Database
+# Database Configuration (Merged)
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        # This will use the DATABASE_URL environment variable on Render
+        # If that's missing (like on your local computer), it uses SQLite
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600
+    )
 }
 
 # Password validation
@@ -81,8 +90,11 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files
+# Static files (WhiteNoise setup)
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Media files
@@ -90,13 +102,11 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # --- Authentication Settings ---
-LOGIN_URL = 'login'  # Added this to fix your redirection issue
+LOGIN_URL = 'login' 
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 
 # --- Session Settings ---
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 1209600 # 2 weeks
-SESSION_SAVE_EVERY_REQUEST = True # Forces a save on every single click
-
-# AUTH_USER_MODEL = 'mystore.CustomUser'
+SESSION_SAVE_EVERY_REQUEST = True
