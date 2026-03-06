@@ -27,12 +27,9 @@ def home(request):
 
 def signup(request):
     if request.method == 'POST':
-        # Change this line:
         em = request.POST.get('email')
         ps = request.POST.get('password')
         fn = request.POST.get('firstname')
-        
-        # Set 'un' to be the email address
         un = em 
 
         if not un:
@@ -43,11 +40,11 @@ def signup(request):
             messages.error(request, "This email is already registered.")
             return render(request, 'signup.html')
 
-        # Now 'un' is 'nikh@gmail.com' instead of None
-        user = User.objects.create_user(username=un, email=em, password=ps, first_name=fn)
-        
+        User.objects.create_user(username=un, email=em, password=ps, first_name=fn)
         messages.success(request, "Account created!")
         return redirect('login')
+
+    return render(request, 'signup.html')
 
 
 def login_user(request):
