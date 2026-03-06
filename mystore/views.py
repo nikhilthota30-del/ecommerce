@@ -25,33 +25,29 @@ def home(request):
     return render(request, 'index.html', data)
 
 
-from django.contrib.auth.models import User
-from django.contrib import messages
-
 def signup(request):
     if request.method == 'POST':
-        # Get data from your form
-        username_val = request.POST.get('username') 
-        email_val = request.POST.get('email')
-        password_val = request.POST.get('password')
+        # Change this line:
+        em = request.POST.get('email')
+        ps = request.POST.get('password')
+        fn = request.POST.get('firstname')
+        
+        # Set 'un' to be the email address
+        un = em 
 
-        # 1. Check if user already exists
-        if User.objects.filter(username=username_val).exists():
-            messages.error(request, "User already exists!")
+        if not un:
+            messages.error(request, "Email is required.")
             return render(request, 'signup.html')
 
-        # 2. THE FIX: Use create_user to hash the password
-        # This makes the password readable by the Login page
-        user = User.objects.create_user(
-            username=username_val, 
-            email=email_val, 
-            password=password_val
-        )
+        if User.objects.filter(username=un).exists():
+            messages.error(request, "This email is already registered.")
+            return render(request, 'signup.html')
+
+        # Now 'un' is 'nikh@gmail.com' instead of None
+        user = User.objects.create_user(username=un, email=em, password=ps, first_name=fn)
         
-        messages.success(request, "Signup successful! Please login.")
+        messages.success(request, "Account created!")
         return redirect('login')
-        
-    return render(request, 'signup.html')
 
 
 def login_user(request):
