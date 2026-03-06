@@ -14,15 +14,15 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- SECURITY SETTINGS ---
-# Pulls from environment on Render, uses fallback for local development
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-gn&pei8^26e*&t1mt%9o6n90ol!5o&8^fh1yv0*kopj-9)*ldq')
 
 # DEBUG is True locally, but False if you set DEBUG=False in Render env vars
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # Allow local dev and the Render domain
-import os
-ALLOWED_HOSTS = ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
+# Add this near your ALLOWED_HOSTS
+CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 
 
 # --- APPLICATION DEFINITION ---
@@ -32,8 +32,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles', # Required for static files
-    'mystore.apps.MystoreConfig',
+    'django.contrib.staticfiles', 
+    'mystore.apps.Myst6oreConfig',
 ]
 
 MIDDLEWARE = [
@@ -70,13 +70,13 @@ WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
 
 # --- DATABASE CONFIGURATION ---
-# Uses SQLite locally, but connects to PostgreSQL automatically on Render
 DATABASES = {
     'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        default=os.environ.get('DATABASE_URL', f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
         conn_max_age=600
     )
 }
+
 
 
 # --- AUTHENTICATION & SESSIONS ---
@@ -105,11 +105,15 @@ USE_TZ = True
 
 # --- STATIC & MEDIA FILES ---
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # Required for WhiteNoise
-# Enable WhiteNoise compression for better performance
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Use these for a smoother login on Render's free tier
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
