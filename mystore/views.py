@@ -63,21 +63,26 @@ def signup(request):
 
 def login_user(request):
     if request.method == 'POST':
-        un = request.POST.get('username')
+        # 1. Grab data using the EXACT 'name' from your HTML
+        un = request.POST.get('username') 
         ps = request.POST.get('password')
 
-        # This checks the encrypted password in the DB
+        # 2. Authenticate against the User table
+        # This works for 'admin' (from build command) or email (from signup)
         user = authenticate(request, username=un, password=ps)
 
         if user is not None:
+            # 3. Create the session
             login(request, user)
+            messages.success(request, f"Welcome back, {user.username}!")
             return redirect('home')
         else:
-            messages.error(request, "Invalid username or password.")
+            # 4. If authentication fails
+            messages.error(request, "Invalid username or password. Please try again.")
             return render(request, 'login.html')
-            
-    return render(request, 'login.html')
 
+    # If it's a GET request, just show the page
+    return render(request, 'login.html')
 
 def logout_user(request):
     request.session.flush() 
