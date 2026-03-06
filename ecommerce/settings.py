@@ -1,7 +1,3 @@
-"""
-Django settings for ecommerce project.
-"""
-
 import os
 from pathlib import Path
 import dj_database_url
@@ -10,20 +6,35 @@ from dotenv import load_dotenv
 # Load variables from .env file locally
 load_dotenv()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- SECURITY SETTINGS ---
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-gn&pei8^26e*&t1mt%9o6n90ol!5o&8^fh1yv0*kopj-9)*ldq')
 
-# DEBUG is True locally, but False if you set DEBUG=False in Render env vars
+# Checks environment variable first, defaults to True for local dev
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# Allow local dev and the Render domain
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
-# Add this near your ALLOWED_HOSTS
-CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
 
+# --- DEPLOYMENT & CSRF SECURITY ---
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+if not DEBUG:
+    # PRODUCTION (Render)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    # Replace the first link with your actual Render URL if it differs
+    CSRF_TRUSTED_ORIGINS = [
+        'https://*.onrender.com',
+        'https://ecommerce-v1.onrender.com' 
+    ]
+else:
+    # LOCAL DEVELOPMENT
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_SSL_REDIRECT = False
+    CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
 
 # --- APPLICATION DEFINITION ---
 INSTALLED_APPS = [
@@ -33,12 +44,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles', 
-     'mystore.apps.MystoreConfig',
+    'mystore.apps.MystoreConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # For serving static files on Render
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -68,7 +79,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
-
 # --- DATABASE CONFIGURATION ---
 DATABASES = {
     'default': dj_database_url.config(
@@ -76,8 +86,6 @@ DATABASES = {
         conn_max_age=600
     )
 }
-
-
 
 # --- AUTHENTICATION & SESSIONS ---
 AUTH_PASSWORD_VALIDATORS = [
@@ -95,42 +103,19 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 1209600 
 SESSION_SAVE_EVERY_REQUEST = True 
 
+# --- STATIC & MEDIA FILES ---
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
+# Use Whitenoise to handle static files in production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # --- INTERNATIONALIZATION ---
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
-
-
-# --- STATIC & MEDIA FILES ---
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-MEDIA_URL = 'media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# # Use these for a smoother login on Render's free tier
-# SESSION_COOKIE_SECURE = True
-# CSRF_COOKIE_SECURE = True
-# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-# 1. First, make sure DEBUG is set (usually at the top of settings.py)
-DEBUG = True  # Set to False only when you are finished and pushing to Render
-
-# 2. Add these Deployment Security Settings at the bottom of the file
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-if not DEBUG:
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = True
-    CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
-else:
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-    SECURE_SSL_REDIRECT = False
-    # Locally, we don't need trusted origins for 127.0.0.1
-    CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
