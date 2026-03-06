@@ -22,7 +22,7 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # Allow local dev and the Render domain
 import os
-ALLOWED_HOSTS = [os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'localhost')]
+ALLOWED_HOSTS = ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
 
 
 # --- APPLICATION DEFINITION ---
