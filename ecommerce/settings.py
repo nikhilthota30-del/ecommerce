@@ -3,39 +3,41 @@ Django settings for ecommerce project.
 """
 
 import os
-import dj_database_url  
 from pathlib import Path
+import dj_database_url
+from dotenv import load_dotenv
+
+# Load variables from .env file locally
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# --- SECURITY SETTINGS ---
+# Pulls from environment on Render, uses fallback for local development
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-gn&pei8^26e*&t1mt%9o6n90ol!5o&8^fh1yv0*kopj-9)*ldq')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# This stays True locally, but False on Render
-DEBUG = 'RENDER' not in os.environ 
+# DEBUG is True locally, but False if you set DEBUG=False in Render env vars
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
-render_external_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if render_external_hostname:
-    ALLOWED_HOSTS.append(render_external_hostname)
+# Allow local dev and the Render domain
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
 
 
-# Application definition
+# --- APPLICATION DEFINITION ---
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.staticfiles', # Required for static files
     'mystore.apps.MystoreConfig',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Added missing comma here
+    'whitenoise.middleware.WhiteNoiseMiddleware', # ADD THIS for production CSS/JS
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -59,24 +61,24 @@ TEMPLATES = [
                 'mystore.context_processors.cart', 
                 'mystore.context_processors.cart_count',
             ],
-            
         },
     },
 ]
 
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
-# Database Configuration (Merged)
+
+# --- DATABASE CONFIGURATION ---
+# Uses SQLite locally, but connects to PostgreSQL automatically on Render
 DATABASES = {
     'default': dj_database_url.config(
-        # This will use the DATABASE_URL environment variable on Render
-        # If that's missing (like on your local computer), it uses SQLite
-        default='sqlite:///db.sqlite3',
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600
     )
 }
 
-# Password validation
+
+# --- AUTHENTICATION & SESSIONS ---
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -84,29 +86,29 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# Internationalization
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'login'
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 1209600 
+SESSION_SAVE_EVERY_REQUEST = True 
+
+
+# --- INTERNATIONALIZATION ---
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (WhiteNoise setup)
+
+# --- STATIC & MEDIA FILES ---
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # Required for WhiteNoise
+# Enable WhiteNoise compression for better performance
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Media files
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# --- Authentication Settings ---
-LOGIN_URL = 'login' 
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'login'
-
-# --- Session Settings ---
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 1209600 # 2 weeks
-SESSION_SAVE_EVERY_REQUEST = True
