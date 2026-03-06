@@ -1,6 +1,9 @@
+import email
+from urllib import request
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
-from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
@@ -21,55 +24,60 @@ def home(request):
     data = {'products': products, 'categories': categories}
     return render(request, 'index.html', data)
 
-def signup(request):
-    if request.method == "POST":
-        # Get the email to use as the username
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        first_name = request.POST.get('firstname')
-        last_name = request.POST.get('lastname')
 
-        # Check if email/username was actually provided
-        if not email:
-            messages.error(request, "Email is required.")
+def signup(request):
+    if request.method == 'POST':
+        # 1. Capture the data using the EXACT names from your HTML form
+        fn = request.POST.get('firstname') # Match name="firstname"
+        em = request.POST.get('email')     # Match name="email"
+        ps = request.POST.get('password')  # Match name="password"
+        
+        # 2. Check if we actually got a value
+        if not em:
+            messages.error(request, "Email is required")
             return render(request, 'signup.html')
 
-        # Use the email as the username so the 'ValueError' goes away
+        # 3. Create the user. 
+        # We use 'em' (email) as the username so it is never None.
         try:
             user = User.objects.create_user(
-                username=first_name,  # Set username to the first name
-                email=email, 
-                password=password,
-                first_name=first_name,
-                last_name=last_name
+                username=em,  # Use email as username to satisfy Django
+                email=em, 
+                password=ps,
+                first_name=fn
             )
-            user.save()
-            messages.success(request, "Account created successfully!")
+            
+            # 4. Create your Customer profile
+            Customer.objects.create(user=user, first_name=fn, email=em)
+            
+            messages.success(request, "Account created! Please login with your email.")
             return redirect('login')
+            
         except Exception as e:
             messages.error(request, f"Error: {e}")
             return render(request, 'signup.html')
-            
+
     return render(request, 'signup.html')
 
-# Updated login_user logic
+
+
 def login_user(request):
-    if request.method == "POST":
-        # Get data and strip whitespace
-        username = request.POST.get('username').strip() 
-        password = request.POST.get('password')
-        
-        # Try to authenticate
-        user = authenticate(request, username=username, password=password)
-        
+    if request.method == 'POST':
+        un = request.POST.get('username')
+        ps = request.POST.get('password')
+
+        # This checks the encrypted password in the DB
+        user = authenticate(request, username=un, password=ps)
+
         if user is not None:
-            auth_login(request, user) 
+            login(request, user)
             return redirect('home')
         else:
-            # Add a more descriptive message for debugging
             messages.error(request, "Invalid username or password.")
-    
+            return render(request, 'login.html')
+            
     return render(request, 'login.html')
+
 
 def logout_user(request):
     request.session.flush() 
@@ -111,10 +119,10 @@ def product_detail(request, pk):
     return render(request, 'product_detail.html', {'product': product})
 
 def profile(request):
-    if not request.session.get('customer_id'):
-        return redirect('login')
-    customer = Customer.objects.get(id=request.session['customer_id'])
+    # Search by email instead of the non-existent 'user' field
+    customer = Customer.objects.get(email=request.user.email) 
     return render(request, 'profile.html', {'customer': customer})
+    
 
 
 

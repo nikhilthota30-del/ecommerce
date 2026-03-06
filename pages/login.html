@@ -3,8 +3,9 @@
 {% block content %}
 <style>
     body {
-        background:url(https://images.pexels.com/photos/238118/pexels-photo-238118.jpeg);
+        background: url('https://images.pexels.com/photos/238118/pexels-photo-238118.jpeg');
         background-size: cover;
+        background-attachment: fixed;
         min-height: 100vh;
     }
     .signup-card {
@@ -24,6 +25,10 @@
         border-radius: 10px;
         font-weight: 600;
     }
+    /* Custom Alert Styling */
+    .alert-dismissible .btn-close {
+        padding: 0.8rem;
+    }
 </style>
 
 <div class="container">
@@ -34,8 +39,14 @@
                 
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert alert-danger rounded-3 py-2 small text-center" role="alert">
+                        <div class="alert alert-{{ message.tags|default:'danger' }} alert-dismissible fade show rounded-3 py-2 small shadow-sm" role="alert">
+                            {% if message.tags == 'success' %}
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                            {% else %}
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            {% endif %}
                             {{ message }}
+                            <button type="button" class="btn-close small" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     {% endfor %}
                 {% endif %}

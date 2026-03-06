@@ -1,5 +1,7 @@
 from django.db import models
 import datetime
+from django.db import models
+from django.contrib.auth.models import User
 
 # 1. Category Model (Must be first so Product can see it)
 class Category(models.Model):
@@ -9,10 +11,14 @@ class Category(models.Model):
         return self.name
 
 # 2. Customer Model (Must be before Order)
+
 class Customer(models.Model):
+    # Add this line to link the UI login to this table
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+    
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    phone = models.CharField(max_length=10)
+    phone = models.CharField(max_length=15)
     email = models.EmailField()
     password = models.CharField(max_length=100)
 

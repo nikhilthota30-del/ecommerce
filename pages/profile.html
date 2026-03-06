@@ -6,14 +6,19 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="d-flex align-items-center mb-4">
-                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 80px; height: 80px;">
-                    <i class="bi bi-person-fill fs-1"></i>
+            
+            {% if user.is_authenticated %}
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 80px; height: 80px;">
+                        <i class="bi bi-person-fill fs-1"></i>
+                    </div>
+                    <div class="ms-4">
+                        <h2 class="fw-bold mb-0">{{ customer.first_name|default:user.username }} {{ customer.last_name }}</h2>
+                        <p class="text-muted mb-0">Member since {{ user.date_joined|date:"M Y" }}</p>
+                    </div>
                 </div>
-                <div class="ms-4">
-                    <h2 class="fw-bold mb-0">{{ customer.first_name }} {{ customer.last_name }}</h2>
-                    <p class="text-muted mb-0">Member since Feb 2026</p>
-                </div>
+                <a href="{% url 'logout' %}" class="btn btn-outline-danger btn-sm rounded-pill px-3">Logout</a>
             </div>
 
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
@@ -24,15 +29,15 @@
                     <div class="row gy-4">
                         <div class="col-md-6">
                             <label class="small text-uppercase fw-bold text-muted">First Name</label>
-                            <p class="fs-5 border-bottom pb-2">{{ customer.first_name }}</p>
+                            <p class="fs-5 border-bottom pb-2">{{ customer.first_name|default:"—" }}</p>
                         </div>
                         <div class="col-md-6">
                             <label class="small text-uppercase fw-bold text-muted">Last Name</label>
-                            <p class="fs-5 border-bottom pb-2">{{ customer.last_name }}</p>
+                            <p class="fs-5 border-bottom pb-2">{{ customer.last_name|default:"—" }}</p>
                         </div>
                         <div class="col-md-6">
                             <label class="small text-uppercase fw-bold text-muted">Email Address</label>
-                            <p class="fs-5 border-bottom pb-2">{{ customer.email }}</p>
+                            <p class="fs-5 border-bottom pb-2">{{ customer.email|default:user.email }}</p>
                         </div>
                         <div class="col-md-6">
                             <label class="small text-uppercase fw-bold text-muted">Phone Number</label>
@@ -40,11 +45,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- <div class="card-footer bg-light border-0 py-3 text-end">
-                    <button class="btn btn-primary rounded-pill px-4 btn-sm fw-bold">
-                        <i class="bi bi-pencil-square me-2"></i>Edit Profile
-                    </button>
-                </div> -->
             </div>
 
             <div class="row mt-4 gy-3">
@@ -71,6 +71,14 @@
                     </a>
                 </div>
             </div>
+            
+            {% else %}
+            <div class="text-center py-5">
+                <h3>Please log in to view your profile</h3>
+                <a href="{% url 'login' %}" class="btn btn-primary mt-3">Login</a>
+            </div>
+            {% endif %}
+
         </div>
     </div>
 </div>

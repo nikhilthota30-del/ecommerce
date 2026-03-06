@@ -113,7 +113,24 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Use these for a smoother login on Render's free tier
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# # Use these for a smoother login on Render's free tier
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# 1. First, make sure DEBUG is set (usually at the top of settings.py)
+DEBUG = True  # Set to False only when you are finished and pushing to Render
+
+# 2. Add these Deployment Security Settings at the bottom of the file
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
+else:
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_SSL_REDIRECT = False
+    # Locally, we don't need trusted origins for 127.0.0.1
+    CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
