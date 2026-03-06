@@ -57,19 +57,22 @@ def signup(request):
             return render(request, 'signup.html', msg)
 
 
+# Updated login_user logic
 def login_user(request):
     if request.method == "POST":
-        username = request.POST.get('username')
+        # Get data and strip whitespace
+        username = request.POST.get('username').strip() 
         password = request.POST.get('password')
         
+        # Try to authenticate
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
-            # THIS IS THE KEY: It saves the user ID into the session
             auth_login(request, user) 
             return redirect('home')
         else:
-            messages.error(request, "Invalid credentials")
+            # Add a more descriptive message for debugging
+            messages.error(request, "Invalid username or password.")
     
     return render(request, 'login.html')
 
