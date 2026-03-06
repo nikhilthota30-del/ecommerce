@@ -21,7 +21,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-gn&pei8^26e*&t1mt%9o6
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 # Allow local dev and the Render domain
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
+import os
+ALLOWED_HOSTS = [os.environ.get('RENDER_EXTERNAL_HOSTNAME', 'localhost')]
 
 
 # --- APPLICATION DEFINITION ---
@@ -37,7 +38,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # ADD THIS for production CSS/JS
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
