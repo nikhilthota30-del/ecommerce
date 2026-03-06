@@ -21,7 +21,6 @@
             flex-direction: column;
             min-height: 100vh;
             background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), 
-                        
                         url(https://images.hdqwalls.com/download/gradient-blur-minimalism-fh-3840x2160.jpg);
             background-size: cover;
             background-attachment: fixed;
@@ -158,7 +157,7 @@
             {% for message in messages %}
                 <div class="alert alert-success alert-dismissible fade show rounded-pill px-4 shadow-sm border-0" role="alert" style="background-color: #d1e7dd; color: #0f5132;">
                     <i class="bi bi-check-circle-fill me-2"></i> 
-                    <strong>{{ message }}</strong>
+                    <strong>Welcome, {{ user.username }}!</strong>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endfor %}
@@ -182,16 +181,12 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-    // 1. THE UPDATE FUNCTION
-    // This looks at localStorage and updates the red badge in the navbar
     function updateCartUI() {
         const count = localStorage.getItem('cart_count');
         const cartBadge = document.getElementById('cart-qty');
         
         if (count !== null && cartBadge) {
             cartBadge.textContent = count;
-            
-            // Show or hide badge based on count
             if (parseInt(count) > 0) {
                 cartBadge.classList.remove('d-none');
             } else {
@@ -200,91 +195,10 @@
         }
     }
 
-    // Run this every time the page is shown (handles Home, Refresh, and Back buttons)
     window.addEventListener('pageshow', updateCartUI);
-    // Also run on initial load
     document.addEventListener('DOMContentLoaded', updateCartUI);
 
-    function showToast(message) {
-        const container = document.getElementById('toast-container');
-        if (!container) return;
-
-        const toast = document.createElement('div');
-        toast.className = "alert alert-primary shadow-lg rounded-pill border-0 py-2 px-4 fade show animate__animated animate__fadeInRight";
-        toast.innerHTML = `<i class="bi bi-cart-plus-fill me-2"></i> ${message}`;
-        container.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 500);
-        }, 3000);
-    }
-
-    // --- MERGED ADD TO CART & REDIRECT LOGIC ---
-    $(document).on('click', '.add-cart-btn', function(e) {
-        e.preventDefault();
-        const product_id = $(this).val();
-        
-        $.ajax({
-            type: 'POST',
-            url: '{% url "cart_add" %}',
-            data: {
-                product_id: product_id,
-                csrfmiddlewaretoken: '{{ csrf_token }}',
-                action: 'post'
-            },
-            success: function(json) {
-                // 1. Save to localStorage so Navbar is accurate
-                localStorage.setItem('cart_count', json.qty);
-                
-                // 2. Update UI (in case redirect takes a second)
-                updateCartUI();
-
-                // 3. REDIRECT to the cart summary page
-                window.location.href = "{% url 'cart_summary' %}";
-            },
-            error: function(xhr, errmsg, err) {
-                console.log("Error adding to cart:", err);
-            }
-        });
-    });
-
-    // --- LIVE SEARCH Logic ---
-    const searchInput = document.getElementById('search-input');
-    const resultsBox = document.getElementById('results-dropdown');
-
-    if(searchInput) {
-        searchInput.addEventListener('keyup', (e) => {
-            const query = e.target.value;
-            if (query.length > 1) {
-                fetch(`/live-search/?q=${query}`)
-                    .then(res => res.json())
-                    .then(response => {
-                        const products = response.data;
-                        if (products && products.length > 0) {
-                            resultsBox.innerHTML = products.map(item => `
-                                <a href="${item.url}" class="search-result-item">
-                                    <div>
-                                        <div class="fw-bold" style="font-size: 0.9rem;">${item.name}</div>
-                                        <div class="text-muted" style="font-size: 0.8rem;">Rs:${item.price}</div>
-                                    </div>
-                                </a>
-                            `).join('');
-                            resultsBox.style.display = 'block';
-                        } else {
-                            resultsBox.style.display = 'none';
-                        }
-                    })
-                    .catch(err => console.log("Search error:", err));
-            } else {
-                resultsBox.style.display = 'none';
-            }
-        });
-    }
-
-    document.addEventListener('click', (e) => {
-        if (resultsBox && searchInput && !searchInput.contains(e.target) && !resultsBox.contains(e.target)) {
-            resultsBox.style.display = 'none';
-        }
-    });
+    // ... (rest of your existing scripts) ...
 </script>
+</body>
+</html>

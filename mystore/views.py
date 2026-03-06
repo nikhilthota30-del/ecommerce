@@ -60,7 +60,7 @@ def login_user(request):
         if user is not None:
             # 3. Create the session
             login(request, user)
-            messages.success(request, f"Welcome back, {user.username}!")
+            messages.success(request, f"Welcome , {user.username}!")
             return redirect('home')
         else:
             # 4. If authentication fails
