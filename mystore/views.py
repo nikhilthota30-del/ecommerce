@@ -27,38 +27,32 @@ def home(request):
 
 def signup(request):
     if request.method == 'POST':
-        # 1. Capture the data using the EXACT names from your HTML form
-        fn = request.POST.get('firstname') # Match name="firstname"
-        em = request.POST.get('email')     # Match name="email"
-        ps = request.POST.get('password')  # Match name="password"
-        
-        # 2. Check if we actually got a value
-        if not em:
-            messages.error(request, "Email is required")
+        fn = request.POST.get('firstname')
+        em = request.POST.get('email')
+        ps = request.POST.get('password')
+
+        # 1. THE CHECK: Does this email/username already exist?
+        if User.objects.filter(username=em).exists():
+            messages.error(request, "This email is already registered. Please login.")
             return render(request, 'signup.html')
 
-        # 3. Create the user. 
-        # We use 'em' (email) as the username so it is never None.
         try:
+            # 2. CREATE: Only runs if the check above passes
             user = User.objects.create_user(
-                username=em,  # Use email as username to satisfy Django
+                username=em, 
                 email=em, 
-                password=ps,
+                password=ps, 
                 first_name=fn
             )
-            
-            # 4. Create your Customer profile
-            Customer.objects.create(user=user, first_name=fn, email=em)
-            
-            messages.success(request, "Account created! Please login with your email.")
+            # Create your customer profile here...
+            messages.success(request, "Account created successfully!")
             return redirect('login')
             
         except Exception as e:
-            messages.error(request, f"Error: {e}")
+            messages.error(request, "An error occurred. Please try again.")
             return render(request, 'signup.html')
 
     return render(request, 'signup.html')
-
 
 
 def login_user(request):
