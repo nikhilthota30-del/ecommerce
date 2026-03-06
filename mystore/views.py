@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.db.models import Q
@@ -21,41 +22,35 @@ def home(request):
     return render(request, 'index.html', data)
 
 def signup(request):
-    if request.method == "GET":
-        return render(request, 'signup.html')
-    else:
-        firstname = request.POST['firstname']
-        lastname = request.POST['lastname']
-        email = request.POST['email'] 
-        mobile = request.POST['mobile']
-        password = request.POST['password']
-        
-        uservalues = {'firstname': firstname, 'lastname': lastname, 'email': email, 'mobile': mobile, 'password': password}
-        customerdata = Customer(first_name=firstname, last_name=lastname, email=email, phone=mobile, password=password)
+    if request.method == "POST":
+        # Get the email to use as the username
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        first_name = request.POST.get('firstname')
+        last_name = request.POST.get('lastname')
 
-        error_msg = None
-        if (not firstname):
-            error_msg = "First name is required"
-        elif (not lastname):
-            error_msg = "Last name is required"
-        elif len(mobile) < 10:
-            error_msg = "Mobile number must be 10 digits long"
-        elif len(mobile) > 10:
-            error_msg = "Mobile number cannot exceed 10 digits"
-        elif (not email):
-            error_msg = "Email is required"
-        elif (not password):
-            error_msg = "Password is required"
+        # Check if email/username was actually provided
+        if not email:
+            messages.error(request, "Email is required.")
+            return render(request, 'signup.html')
 
-        if(not error_msg):
-            customerdata.password = make_password(customerdata.password)
-            customerdata.save()
-            messages.success(request, "Account created successfully")
+        # Use the email as the username so the 'ValueError' goes away
+        try:
+            user = User.objects.create_user(
+                username=first_name,  # Set username to the first name
+                email=email, 
+                password=password,
+                first_name=first_name,
+                last_name=last_name
+            )
+            user.save()
+            messages.success(request, "Account created successfully!")
             return redirect('login')
-        else:
-            msg = {'error': error_msg, 'value': uservalues}
-            return render(request, 'signup.html', msg)
-
+        except Exception as e:
+            messages.error(request, f"Error: {e}")
+            return render(request, 'signup.html')
+            
+    return render(request, 'signup.html')
 
 # Updated login_user logic
 def login_user(request):
