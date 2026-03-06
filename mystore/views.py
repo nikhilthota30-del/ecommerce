@@ -25,33 +25,29 @@ def home(request):
     return render(request, 'index.html', data)
 
 
+from django.contrib.auth.models import User
+
 def signup(request):
     if request.method == 'POST':
-        fn = request.POST.get('firstname')
-        em = request.POST.get('email')
+        un = request.POST.get('username') # or 'email' depending on your form
         ps = request.POST.get('password')
+        em = request.POST.get('email')
 
-        # 1. THE CHECK: Does this email/username already exist?
-        if User.objects.filter(username=em).exists():
-            messages.error(request, "This email is already registered. Please login.")
+        # 1. Check if user exists to avoid the 'Duplicate Key' error
+        if User.objects.filter(username=un).exists():
+            messages.error(request, "Username already exists!")
             return render(request, 'signup.html')
 
-        try:
-            # 2. CREATE: Only runs if the check above passes
-            user = User.objects.create_user(
-                username=em, 
-                email=em, 
-                password=ps, 
-                first_name=fn
-            )
-            # Create your customer profile here...
-            messages.success(request, "Account created successfully!")
-            return redirect('login')
-            
-        except Exception as e:
-            messages.error(request, "An error occurred. Please try again.")
-            return render(request, 'signup.html')
+        # 2. CRITICAL FIX: Use create_user, NOT create
+        # This hashes the password so the Login page can recognize it
+        user = User.objects.create_user(username=un, password=ps, email=em)
+        
+        # 3. Save your custom Customer model if you have one
+        # Customer.objects.create(user=user, ...)
 
+        messages.success(request, "Account created! You can now login.")
+        return redirect('login')
+    
     return render(request, 'signup.html')
 
 
