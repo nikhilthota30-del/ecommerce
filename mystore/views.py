@@ -116,15 +116,27 @@ def profile(request):
     
 
 
-
 def cancel_order(request, order_id):
-    if request.method == "POST":
-        customer_id = request.session.get('customer_id')
-        if not customer_id:
-            return redirect('login')
-        order = get_object_or_404(Order, id=order_id, customer_id=customer_id)
-        order.delete()
-        messages.success(request, "Order has been cancelled successfully.")
+    if request.method == 'POST':
+        try:
+            # We fetch the order by ID. 
+            order = Order.objects.get(id=order_id)
+            
+            # Security: Ensure the person canceling is the owner by checking email
+            if order.customer.user == request.user or order.customer.email == request.user.email:
+                if not order.status: # status=False means not dispatched
+                    order.delete()
+                    messages.success(request, "Order #GS-{} has been cancelled.".format(order_id))
+                else:
+                    messages.error(request, "This order is already dispatched and cannot be cancelled.")
+            else:
+                messages.error(request, "Permission denied.")
+                
+        except Order.DoesNotExist:
+            messages.error(request, "Order not found.")
+        except Exception as e:
+            messages.error(request, f"An error occurred: {str(e)}")
+            
     return redirect('orders')
 
 def search(request):
@@ -136,18 +148,19 @@ def search(request):
 
 def live_search(request):
     query = request.GET.get('q', '')
-    data = []
+    results = []
     if len(query) > 1:
-        products = Product.objects.filter(
-            Q(name__icontains=query) | Q(category__name__icontains=query)
-        )[:5]
+        # Filter products by name or description
+        products = Product.objects.filter(name__icontains=query)[:5] 
         for p in products:
-            data.append({
+            results.append({
+                'id': p.id,
                 'name': p.name,
                 'price': str(p.price),
-                'url': f"/product/{p.id}/",
+                'image': p.image.url if p.image else '/static/images/default.png',
+                'url': f'/product/{p.id}/' # Adjust based on your product detail URL
             })
-    return JsonResponse({'data': data})
+    return JsonResponse({'results': results})
 
 def cart_clear(request):
     # Set the cart session to an empty dictionary

@@ -47,12 +47,12 @@ class Product(models.Model):
 class Order(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE) # Fixed typo here
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    status = models.BooleanField(default=False)
     quantity = models.IntegerField()
     price = models.IntegerField()
     address = models.CharField(max_length=250, default='', blank=True)
     phone = models.CharField(max_length=20, default='', blank=True)
     date = models.DateField(default=datetime.datetime.today)
-    status = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.product.name} - {self.customer.first_name}"

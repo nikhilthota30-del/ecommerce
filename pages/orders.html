@@ -3,6 +3,8 @@
 {% block title %}My Orders | Gadget Space{% endblock %}
 
 {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <div class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold text-dark">My Purchase History</h2>
@@ -17,8 +19,8 @@
                 <thead class="bg-light">
                     <tr>
                         <th class="ps-4 py-3 border-0">Order ID</th>
-                        <th class="py-3 border-0">Product</th>
-                        <th class="py-3 border-0">Quantity</th> <th class="py-3 border-0">Date</th>
+                        <th class="py-3 border-0">Product</th> <th class="py-3 border-0">Quantity</th> 
+                        <th class="py-3 border-0">Date</th>
                         <th class="py-3 border-0">Price Paid</th>
                         <th class="py-3 border-0">Status</th>
                         <th class="py-3 border-0">Action</th>
@@ -29,52 +31,57 @@
                         {% for order in orders %}
                         <tr>
                             <td class="ps-4 text-muted small">#GS-{{ order.id }}</td>
+                            
                             <td>
                                 <div class="d-flex align-items-center">
                                     {% if order.product.image %}
-                                        <img src="{{ order.product.image.url }}" class="rounded shadow-sm" style="width: 45px; height: 45px; object-fit: contain; background: #f8f9fa;">
+                                        <img src="{{ order.product.image.url }}" 
+                                             alt="{{ order.product.name }}" 
+                                             class="rounded-3 me-3" 
+                                             style="width: 50px; height: 50px; object-fit: cover; border: 1px solid #eee;">
+                                    {% else %}
+                                        <div class="bg-light rounded-3 me-3 d-flex align-items-center justify-content-center" 
+                                             style="width: 50px; height: 50px; border: 1px solid #eee;">
+                                            <i class="bi bi-image text-muted"></i>
+                                        </div>
                                     {% endif %}
-                                    <div class="ms-3">
-                                        <span class="d-block fw-bold text-dark">{{ order.product.name }}</span>
-                                    </div>
+                                    <span class="fw-semibold text-dark">{{ order.product.name }}</span>
                                 </div>
                             </td>
-                            <td><span class="badge bg-light text-dark border">{{ order.quantity }}</span></td>
+
+                            <td>{{ order.quantity }}</td>
                             <td>{{ order.date|date:"M d, Y" }}</td>
-                            <td class="fw-bold text-primary">Rs. {{ order.price }}</td>
+                            <td>Rs:{{ order.price }}/-</td>
                             <td>
                                 {% if order.status %}
-                                    <span class="badge bg-success-subtle text-success rounded-pill px-3">
-                                        <i class="bi bi-check-circle-fill me-1"></i>Dispatched
-                                    </span>
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">Completed</span>
                                 {% else %}
-                                    <span class="badge bg-warning-subtle text-warning rounded-pill px-3 text-dark">
-                                        <i class="bi bi-clock-history me-1"></i>Processing
-                                    </span>
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3">Pending</span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if not order.status %}
-                                    <form action="{% url 'cancel_order' order.id %}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this order?')">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-link text-danger btn-sm p-0 text-decoration-none">
-                                            <i class="bi bi-trash me-1"></i>Cancel
-                                        </button>
-                                    </form>
+                                <form id="cancel-form-{{ order.id }}" 
+                                      action="{% url 'cancel_order' order.id %}" 
+                                      method="POST" 
+                                      style="display:inline;"
+                                      onsubmit="return handleCancelSubmission(event, '{{ order.id }}')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-link text-danger btn-sm p-0 text-decoration-none fw-bold">
+                                        <i class="bi bi-trash me-1"></i>Cancel
+                                    </button>
+                                </form>
                                 {% else %}
-                                    <span class="text-muted small italic">Finalized</span>
+                                <span class="text-muted small italic">Finalized</span>
                                 {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="7" class="text-center py-5">
-                                <div class="py-4 text-center">
-                                    <i class="bi bi-bag-x display-1 text-secondary opacity-25"></i>
-                                    <p class="lead mt-3 text-muted">You haven't placed any orders yet.</p>
-                                    <a href="{% url 'home' %}" class="btn btn-primary rounded-pill px-4 mt-2">Start Shopping</a>
-                                </div>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="bi bi-cart-x display-4 d-block mb-3 opacity-25"></i>
+                                You haven't placed any orders yet.
                             </td>
                         </tr>
                     {% endif %}
@@ -84,20 +91,48 @@
     </div>
 </div>
 
+<script>
+function handleCancelSubmission(event, orderId) {
+    event.preventDefault();
+    Swal.fire({
+        title: 'Cancel Order?',
+        text: "Are you sure you want to cancel this order?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, cancel it!',
+        cancelButtonText: 'No, keep it'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('cancel-form-' + orderId).submit();
+        }
+    });
+    return false;
+}
+</script>
+
 <style>
     .table thead th {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         text-transform: uppercase;
-        letter-spacing: 0.8px;
-        color: #6c757d;
+        letter-spacing: 1px;
+        color: #7f8c8d;
+        font-weight: 700;
     }
     .table tbody tr {
-        transition: all 0.2s ease;
+        transition: background-color 0.2s ease;
     }
     .table tbody tr:hover {
-        background-color: #fbfcfe !important;
-        transform: scale(1.002);
+        background-color: #f8faff !important;
     }
     .rounded-4 { border-radius: 1rem !important; }
+    .italic { font-style: italic; }
+    
+    /* Better badge styling */
+    .badge {
+        font-weight: 500;
+        font-size: 0.75rem;
+    }
 </style>
 {% endblock %}
