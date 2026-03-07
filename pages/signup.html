@@ -1,0 +1,98 @@
+{% extends "theme.html" %}
+
+{% block content %}
+<style>
+    body {
+        background:url(https://images.pexels.com/photos/238118/pexels-photo-238118.jpeg);
+        background-size: cover;
+        min-height: 100vh;
+    }
+    .signup-card {
+        /* Removed transition and transform for a static look */
+        border: none !important;
+        border-radius: 20px !important;
+    }
+    .signup-card:hover {
+        /* Optional: Keeps the shadow on hover but removed the movement */
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
+    }
+    .form-control {
+        border-radius: 10px;
+    }
+    .form-control:focus {
+        /* Removed the scale effect on focus */
+        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.15);
+    }
+    .btn-static { /* Renamed from btn-animate */
+        border-radius: 10px;
+        font-weight: 600;
+    }
+</style>
+
+<div class="container mt-5 pb-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 shadow p-4 bg-white signup-card">
+            <h1 class="text-center mb-2 fw-bold">Create Account</h1>
+            <p class="text-center text-muted mb-4">Join the Gadget space community</p>
+            {% if error %}
+            <div>
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <strong>{{ error }}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+             </div>
+             {%elif success%}
+             <div>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>{{ success }}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+             </div>
+             {% endif %}
+            
+            <form method="POST" action="signup">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <label class="form-label">First Name</label>
+                        <input type="text" name="firstname" class="form-control" placeholder="First Name"value={{value.firstname}} >
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" name="lastname" class="form-control" placeholder="Last Name" value={{value.lastname}}>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Mobile Number</label>
+                    <input type="text" name="mobile" class="form-control" placeholder="Enter mobile number" value={{value.mobile}}>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email address</label>
+                    <input type="email" name="email" class="form-control" placeholder="name@example.com" value={{value.email}}>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Enter password" value={{value.password}}>
+                </div>
+
+                <!-- <div class="mb-4">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" name="confirm_password" class="form-control" placeholder="Confirm password">
+                </div> -->
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-static py-2">Sign Up</button>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <p>Already have an account? <a href="login" class="text-decoration-none">Login here</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>             
+{% endblock %}

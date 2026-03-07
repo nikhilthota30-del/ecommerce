@@ -1,0 +1,79 @@
+{% extends "theme.html" %}
+
+{% block content %}
+<style>
+    body {
+        background: url('https://images.pexels.com/photos/238118/pexels-photo-238118.jpeg');
+        background-size: cover;
+        background-attachment: fixed;
+        min-height: 100vh;
+    }
+    .signup-card {
+        border: none !important;
+        border-radius: 20px !important;
+    }
+    .signup-card:hover {
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175) !important;
+    }
+    .form-control {
+        border-radius: 10px;
+    }
+    .form-control:focus {
+        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.15);
+    }
+    .btn-static { 
+        border-radius: 10px;
+        font-weight: 600;
+    }
+    /* Custom Alert Styling */
+    .alert-dismissible .btn-close {
+        padding: 0.8rem;
+    }
+</style>
+
+<div class="container">
+    <div class="row m-5">
+        <div class="col-lg-6 mx-auto">
+            <div class="card p-4 border shadow rounded-4">
+                <h1 class="mb-4 text-center">Login Page</h1>
+                
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'danger' }} alert-dismissible fade show rounded-3 py-2 small shadow-sm" role="alert">
+                            {% if message.tags == 'success' %}
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                            {% else %}
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            {% endif %}
+                            {{ message }}
+                            <button type="button" class="btn-close small" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="POST" action="{% url 'login' %}" autocomplete="off">
+                    {% csrf_token %}
+                    
+                    <div class="form-group mb-3">
+                        <label class="form-label">Username / Email</label>
+                        <input type="text" class="form-control rounded-3" name="username" required autocomplete="off">
+                    </div>
+                    
+                    <div class="form-group mb-4">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control rounded-3" name="password" required autocomplete="current-password">
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary rounded-pill btn-static">Login</button>
+                    </div>
+
+                    <span class="d-block text-center mt-3 text-muted small">
+                        Don't have an account? <a href="{% url 'signup' %}" class="text-decoration-none">Sign Up</a>
+                    </span>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
