@@ -84,6 +84,9 @@
             right: 20px;
             z-index: 9999;
         }
+
+        .alert-success { background-color: #d1e7dd !important; color: #0f5132 !important; }
+        .alert-danger { background-color: #f8d7da !important; color: #842029 !important; }
     </style>
 </head>
 <body>
@@ -155,7 +158,7 @@
     <div class="container mt-3">
         {% if messages %}
             {% for message in messages %}
-                <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show rounded-pill px-4 shadow-sm border-0 animate__animated animate__fadeInDown" role="alert" style="{% if message.tags == 'success' %}background-color: #d1e7dd; color: #0f5132;{% elif message.tags == 'error' %}background-color: #f8d7da; color: #842029;{% endif %}">
+                <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show rounded-pill px-4 shadow-sm border-0 animate__animated animate__fadeInDown" role="alert">
                     {% if message.tags == 'success' %}
                         <i class="bi bi-check-circle-fill me-2"></i> 
                     {% else %}
